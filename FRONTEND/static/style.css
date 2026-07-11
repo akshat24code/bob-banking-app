@@ -1,0 +1,39 @@
+/*
+ * style.css - Custom overrides for the SecureBank application.
+ */
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main.container {
+  flex: 1;
+}
+
+.navbar-brand {
+  letter-spacing: 0.5px;
+}
+
+.display-6 {
+  font-size: 2rem;
+}
+
+.card {
+  border-radius: 0.75rem;
+}
+
+.form-control:focus {
+  border-color: #3b82d4;
+  box-shadow: 0 0 0 0.2rem rgba(59, 130, 212, 0.25);
+}
+
+.alert {
+  border-radius: 0.5rem;
+}
+
+footer {
+  font-size: 12px;
+  color: #57606a;
+}

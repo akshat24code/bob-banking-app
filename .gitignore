@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Virtual environment
+venv/
+env/
+.env
+.venv/
+
+# SQLite database
+*.db
+*.sqlite
+*.sqlite3
+
+# pytest cache
+.pytest_cache/
+
+# Bob IDE
+.bob/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp

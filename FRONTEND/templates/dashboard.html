@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - SecureBank{% endblock %}
+
+{% block content %}
+
+<!-- Section 1: Account Summary -->
+<div class="row mb-4">
+  <div class="col-12">
+    <div class="card border-0 shadow-sm bg-primary text-white">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+          <div>
+            <h5 class="mb-0 fw-semibold">Hello, {{ full_name }}</h5>
+            <small class="opacity-75">Here is your account summary</small>
+          </div>
+          <div class="text-end">
+            <div class="small opacity-75 mb-1">Current Balance</div>
+            <div class="display-6 fw-bold">${{ "%.2f"|format(balance) }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Sections 2 & 3: Deposit and Withdraw -->
+<div class="row g-4">
+
+  <div class="col-12 col-md-6">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body p-4">
+        <h5 class="card-title fw-bold text-success mb-1">Deposit Funds</h5>
+        <p class="text-muted small mb-3">Add money to your account</p>
+        <form method="POST" action="{{ url_for('deposit') }}" novalidate>
+          <div class="mb-3">
+            <label for="deposit-amount" class="form-label fw-semibold">Amount ($)</label>
+            <div class="input-group">
+              <span class="input-group-text">$</span>
+              <input type="number" class="form-control" id="deposit-amount" name="amount"
+                placeholder="0.00" min="0.01" step="0.01" />
+            </div>
+          </div>
+          <div class="d-grid">
+            <button type="submit" class="btn btn-success btn-lg">Deposit</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-md-6">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body p-4">
+        <h5 class="card-title fw-bold text-danger mb-1">Withdraw Funds</h5>
+        <p class="text-muted small mb-3">Take money from your account</p>
+        <form method="POST" action="{{ url_for('withdraw') }}" novalidate>
+          <div class="mb-3">
+            <label for="withdraw-amount" class="form-label fw-semibold">Amount ($)</label>
+            <div class="input-group">
+              <span class="input-group-text">$</span>
+              <input type="number" class="form-control" id="withdraw-amount" name="amount"
+                placeholder="0.00" min="0.01" step="0.01" />
+            </div>
+          </div>
+          <div class="d-grid">
+            <button type="submit" class="btn btn-danger btn-lg">Withdraw</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
