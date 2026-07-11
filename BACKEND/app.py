@@ -141,20 +141,26 @@ def withdraw():
     Process a withdrawal. Validates amount and checks sufficient funds.
     """
     raw = request.form.get("amount", "")
-    amount, error = _parse_amount(raw)
 
-    if error:
-        flash(error, "error")
+    if not raw or not raw.strip():
+        flash("Amount is required", "error")
+        return redirect(url_for("dashboard"))
+
+    try:
+        amount = float(raw.strip())
+    except ValueError:
+        flash("Amount must be greater than zero", "error")
+        return redirect(url_for("dashboard"))
+
+    if amount <= 0:
+        flash("Amount must be greater than zero", "error")
         return redirect(url_for("dashboard"))
 
     customer_id = session["user_id"]
     current_balance = db.get_balance(customer_id)
 
     if amount > current_balance:
-        flash(
-            f"Insufficient funds. Your current balance is ${current_balance:,.2f}.",
-            "error",
-        )
+        flash("Insufficient funds", "error")
         return redirect(url_for("dashboard"))
 
     new_balance = round(current_balance - amount, 2)
