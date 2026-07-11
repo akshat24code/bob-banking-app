@@ -1,75 +1,792 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard - SecureBank{% endblock %}
+{% block title %}Dashboard — SecureBank{% endblock %}
 
 {% block content %}
+{# ── Derive time-of-day greeting ── #}
+{% set hour = now().hour if now is defined else 10 %}
+{% if hour < 12 %}{% set greeting = "Good Morning" %}
+{% elif hour < 17 %}{% set greeting = "Good Afternoon" %}
+{% else %}{% set greeting = "Good Evening" %}{% endif %}
 
-<!-- Section 1: Account Summary -->
-<div class="row mb-4">
-  <div class="col-12">
-    <div class="card border-0 shadow-sm bg-primary text-white">
-      <div class="card-body p-4">
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-          <div>
-            <h5 class="mb-0 fw-semibold">Hello, {{ full_name }}</h5>
-            <small class="opacity-75">Here is your account summary</small>
+{# ── First name only ── #}
+{% set first_name = full_name.split(' ')[0] %}
+
+{# ═══════════════════════════════════════════════════════════════════
+   HERO — Balance Card
+   ═══════════════════════════════════════════════════════════════════ #}
+<section class="hero-card" aria-label="Account overview">
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-4">
+
+    {# Left: greeting + meta #}
+    <div>
+      <p class="hero-greeting">{{ greeting }},</p>
+      <h2 class="hero-name">{{ full_name }} 👋</h2>
+
+      <div class="hero-meta">
+        <div class="hero-meta-item">
+          <strong>Account</strong>
+          •••• •••• 4821
+        </div>
+        <div class="hero-meta-item">
+          <strong>Type</strong>
+          Personal Checking
+        </div>
+        <div class="hero-meta-item">
+          <strong>Last Login</strong>
+          Today
+        </div>
+        <div class="hero-meta-item">
+          <strong>Status</strong>
+          <span style="color:#86efac">● Active</span>
+        </div>
+      </div>
+    </div>
+
+    {# Right: balance #}
+    <div class="text-md-end" style="flex-shrink:0">
+      <p class="hero-balance-label">Total Balance</p>
+      <p class="hero-balance-amount"
+         data-counter="{{ balance }}"
+         aria-label="Balance: {{ '$%.2f' | format(balance) }}">
+        ${{ "%.2f" | format(balance) }}
+      </p>
+      <div class="hero-actions mt-3">
+        <button class="hero-action-btn"
+                onclick="smoothScrollTo('depositSection')"
+                aria-label="Quick deposit">
+          <i class="fa-solid fa-plus fa-sm" aria-hidden="true"></i> Deposit
+        </button>
+        <button class="hero-action-btn"
+                onclick="smoothScrollTo('withdrawSection')"
+                aria-label="Quick withdraw">
+          <i class="fa-solid fa-minus fa-sm" aria-hidden="true"></i> Withdraw
+        </button>
+        <button class="hero-action-btn"
+                onclick="smoothScrollTo('txnSection')"
+                aria-label="View transactions">
+          <i class="fa-solid fa-list fa-sm" aria-hidden="true"></i> History
+        </button>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+{# ═══════════════════════════════════════════════════════════════════
+   ACCOUNT OVERVIEW — Stat Cards
+   ═══════════════════════════════════════════════════════════════════ #}
+<section class="gap-section" aria-label="Account statistics">
+  <div class="sb-section-header">
+    <div>
+      <h3 class="sb-section-title">Account Overview</h3>
+      <p class="sb-section-sub">Your financial snapshot at a glance</p>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-6 col-lg-3">
+      <div class="stat-card h-100">
+        <div class="stat-icon blue" aria-hidden="true">
+          <i class="fa-solid fa-wallet"></i>
+        </div>
+        <div class="stat-label">Current Balance</div>
+        <div class="stat-value"
+             data-counter="{{ balance }}"
+             aria-label="Balance: {{ '$%.2f' | format(balance) }}">
+          ${{ "%.2f" | format(balance) }}
+        </div>
+        <div class="stat-change up">
+          <i class="fa-solid fa-arrow-trend-up fa-xs" aria-hidden="true"></i>
+          Live balance
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-lg-3">
+      <div class="stat-card h-100">
+        <div class="stat-icon green" aria-hidden="true">
+          <i class="fa-solid fa-arrow-down-to-line"></i>
+        </div>
+        <div class="stat-label">Monthly Income</div>
+        <div class="stat-value" data-counter="3240.00">$3,240.00</div>
+        <div class="stat-change up">
+          <i class="fa-solid fa-arrow-trend-up fa-xs" aria-hidden="true"></i>
+          +8.2% vs last month
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-lg-3">
+      <div class="stat-card h-100">
+        <div class="stat-icon red" aria-hidden="true">
+          <i class="fa-solid fa-arrow-up-from-line"></i>
+        </div>
+        <div class="stat-label">Monthly Expense</div>
+        <div class="stat-value" data-counter="1890.00">$1,890.00</div>
+        <div class="stat-change down">
+          <i class="fa-solid fa-arrow-trend-down fa-xs" aria-hidden="true"></i>
+          +3.1% vs last month
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-lg-3">
+      <div class="stat-card h-100">
+        <div class="stat-icon purple" aria-hidden="true">
+          <i class="fa-solid fa-piggy-bank"></i>
+        </div>
+        <div class="stat-label">Savings Rate</div>
+        <div class="stat-value">41.7%</div>
+        <div class="stat-change up">
+          <i class="fa-solid fa-arrow-trend-up fa-xs" aria-hidden="true"></i>
+          $1,350 saved
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+{# ═══════════════════════════════════════════════════════════════════
+   QUICK ACTIONS
+   ═══════════════════════════════════════════════════════════════════ #}
+<section class="gap-section" aria-label="Quick actions">
+  <div class="sb-section-header">
+    <div>
+      <h3 class="sb-section-title">Quick Actions</h3>
+      <p class="sb-section-sub">Manage your account in seconds</p>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-6 col-md-3">
+      <a class="action-card deposit" href="#depositSection"
+         onclick="event.preventDefault(); smoothScrollTo('depositSection')"
+         role="button" aria-label="Deposit funds">
+        <div class="action-icon green" aria-hidden="true">
+          <i class="fa-solid fa-circle-plus"></i>
+        </div>
+        <div class="action-title">Deposit</div>
+        <div class="action-subtitle">Add funds instantly</div>
+      </a>
+    </div>
+    <div class="col-6 col-md-3">
+      <a class="action-card withdraw" href="#withdrawSection"
+         onclick="event.preventDefault(); smoothScrollTo('withdrawSection')"
+         role="button" aria-label="Withdraw funds">
+        <div class="action-icon red" aria-hidden="true">
+          <i class="fa-solid fa-circle-minus"></i>
+        </div>
+        <div class="action-title">Withdraw</div>
+        <div class="action-subtitle">Access your money</div>
+      </a>
+    </div>
+    <div class="col-6 col-md-3">
+      <a class="action-card transfer" href="#depositSection"
+         onclick="event.preventDefault(); smoothScrollTo('depositSection')"
+         role="button" aria-label="Transfer funds">
+        <div class="action-icon blue" aria-hidden="true">
+          <i class="fa-solid fa-paper-plane"></i>
+        </div>
+        <div class="action-title">Transfer</div>
+        <div class="action-subtitle">Send to anyone</div>
+      </a>
+    </div>
+    <div class="col-6 col-md-3">
+      <a class="action-card history" href="#txnSection"
+         onclick="event.preventDefault(); smoothScrollTo('txnSection')"
+         role="button" aria-label="View transaction history">
+        <div class="action-icon purple" aria-hidden="true">
+          <i class="fa-solid fa-clock-rotate-left"></i>
+        </div>
+        <div class="action-title">History</div>
+        <div class="action-subtitle">All transactions</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+
+{# ═══════════════════════════════════════════════════════════════════
+   DEPOSIT & WITHDRAW FORMS
+   ═══════════════════════════════════════════════════════════════════ #}
+<section class="gap-section" id="depositSection" aria-label="Deposit and Withdraw">
+  <div class="sb-section-header">
+    <div>
+      <h3 class="sb-section-title">Funds Management</h3>
+      <p class="sb-section-sub">Deposit or withdraw from your account</p>
+    </div>
+  </div>
+
+  <div class="row g-4">
+
+    {# ── DEPOSIT ──────────────────────────────── #}
+    <div class="col-12 col-md-6">
+      <div class="form-card" id="depositSection">
+        <div class="form-card-header">
+          <div class="form-card-icon green" aria-hidden="true">
+            <i class="fa-solid fa-circle-plus"></i>
           </div>
-          <div class="text-end">
-            <div class="small opacity-75 mb-1">Current Balance</div>
-            <div class="display-6 fw-bold">${{ "%.2f"|format(balance) }}</div>
+          <div>
+            <p class="form-card-title">Deposit Funds</p>
+            <p class="form-card-subtitle">Add money to your account instantly</p>
+          </div>
+        </div>
+
+        {# ── UNCHANGED: action, method, input name ── #}
+        <form method="POST" action="{{ url_for('deposit') }}" novalidate id="depositForm">
+          <div style="margin-bottom:18px">
+            <label class="sb-input-label" for="deposit-amount">Amount (USD)</label>
+            <div class="sb-input-wrap">
+              <span class="sb-input-prefix" aria-hidden="true">$</span>
+              <input
+                type="number"
+                class="sb-input"
+                id="deposit-amount"
+                name="amount"
+                placeholder="0.00"
+                min="0.01"
+                step="0.01"
+                aria-required="true"
+                aria-label="Deposit amount in US dollars"
+              />
+            </div>
+            <p class="sb-input-hint">
+              <i class="fa-regular fa-circle-info fa-xs" aria-hidden="true"></i>
+              Minimum deposit: $0.01
+            </p>
+          </div>
+
+          <button type="submit"
+                  class="sb-btn sb-btn-success sb-btn-lg sb-btn-full"
+                  aria-label="Confirm deposit">
+            <span class="btn-text">
+              <i class="fa-solid fa-circle-plus" aria-hidden="true"></i>
+              Confirm Deposit
+            </span>
+          </button>
+        </form>
+
+      </div>
+    </div>
+
+    {# ── WITHDRAW ─────────────────────────────── #}
+    <div class="col-12 col-md-6">
+      <div class="form-card" id="withdrawSection">
+        <div class="form-card-header">
+          <div class="form-card-icon red" aria-hidden="true">
+            <i class="fa-solid fa-circle-minus"></i>
+          </div>
+          <div>
+            <p class="form-card-title">Withdraw Funds</p>
+            <p class="form-card-subtitle">Transfer money to your external account</p>
+          </div>
+        </div>
+
+        {# ── UNCHANGED: action, method, input name ── #}
+        <form method="POST" action="{{ url_for('withdraw') }}" novalidate id="withdrawForm">
+          <div style="margin-bottom:18px">
+            <label class="sb-input-label" for="withdraw-amount">Amount (USD)</label>
+            <div class="sb-input-wrap">
+              <span class="sb-input-prefix" aria-hidden="true">$</span>
+              <input
+                type="number"
+                class="sb-input"
+                id="withdraw-amount"
+                name="amount"
+                placeholder="0.00"
+                min="0.01"
+                step="0.01"
+                aria-required="true"
+                aria-label="Withdrawal amount in US dollars"
+              />
+            </div>
+            <p class="sb-input-hint">
+              <i class="fa-regular fa-circle-info fa-xs" aria-hidden="true"></i>
+              Available: <strong>${{ "%.2f" | format(balance) }}</strong>
+            </p>
+          </div>
+
+          <button type="submit"
+                  class="sb-btn sb-btn-danger sb-btn-lg sb-btn-full"
+                  aria-label="Confirm withdrawal">
+            <span class="btn-text">
+              <i class="fa-solid fa-circle-minus" aria-hidden="true"></i>
+              Confirm Withdrawal
+            </span>
+          </button>
+        </form>
+
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+{# ═══════════════════════════════════════════════════════════════════
+   CHARTS
+   ═══════════════════════════════════════════════════════════════════ #}
+<section class="gap-section" aria-label="Financial charts">
+  <div class="sb-section-header">
+    <div>
+      <h3 class="sb-section-title">Analytics</h3>
+      <p class="sb-section-sub">6-month financial overview</p>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-12 col-lg-7">
+      <div class="chart-card h-100">
+        <div class="sb-section-header" style="margin-bottom:14px">
+          <div>
+            <p style="font-size:.875rem;font-weight:600;color:var(--clr-text);margin:0">Monthly Balance</p>
+            <p style="font-size:.75rem;color:var(--clr-text-muted);margin:0">Balance trend over 6 months</p>
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas id="balanceChart" aria-label="Monthly balance chart" role="img"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-5">
+      <div class="chart-card h-100">
+        <div class="sb-section-header" style="margin-bottom:14px">
+          <div>
+            <p style="font-size:.875rem;font-weight:600;color:var(--clr-text);margin:0">Income vs Expense</p>
+            <p style="font-size:.75rem;color:var(--clr-text-muted);margin:0">This month breakdown</p>
+          </div>
+        </div>
+        <div class="chart-container" style="height:200px">
+          <canvas id="incomeExpenseChart" aria-label="Income vs expense chart" role="img"></canvas>
+        </div>
+        <div class="d-flex justify-content-center gap-4 mt-3">
+          <div style="text-align:center">
+            <div style="font-size:.72rem;font-weight:600;color:var(--clr-success);text-transform:uppercase;letter-spacing:.05em">Income</div>
+            <div style="font-size:1.1rem;font-weight:700;color:var(--clr-text)">$3,240</div>
+          </div>
+          <div style="width:1px;background:var(--clr-border)"></div>
+          <div style="text-align:center">
+            <div style="font-size:.72rem;font-weight:600;color:var(--clr-danger);text-transform:uppercase;letter-spacing:.05em">Expense</div>
+            <div style="font-size:1.1rem;font-weight:700;color:var(--clr-text)">$1,890</div>
+          </div>
+          <div style="width:1px;background:var(--clr-border)"></div>
+          <div style="text-align:center">
+            <div style="font-size:.72rem;font-weight:600;color:var(--clr-primary);text-transform:uppercase;letter-spacing:.05em">Saved</div>
+            <div style="font-size:1.1rem;font-weight:700;color:var(--clr-text)">$1,350</div>
           </div>
         </div>
       </div>
     </div>
   </div>
-</div>
+</section>
 
-<!-- Sections 2 & 3: Deposit and Withdraw -->
-<div class="row g-4">
 
-  <div class="col-12 col-md-6">
-    <div class="card border-0 shadow-sm h-100">
-      <div class="card-body p-4">
-        <h5 class="card-title fw-bold text-success mb-1">Deposit Funds</h5>
-        <p class="text-muted small mb-3">Add money to your account</p>
-        <form method="POST" action="{{ url_for('deposit') }}" novalidate>
-          <div class="mb-3">
-            <label for="deposit-amount" class="form-label fw-semibold">Amount ($)</label>
-            <div class="input-group">
-              <span class="input-group-text">$</span>
-              <input type="number" class="form-control" id="deposit-amount" name="amount"
-                placeholder="0.00" min="0.01" step="0.01" />
-            </div>
-          </div>
-          <div class="d-grid">
-            <button type="submit" class="btn btn-success btn-lg">Deposit</button>
-          </div>
-        </form>
+{# ═══════════════════════════════════════════════════════════════════
+   RECENT TRANSACTIONS
+   ═══════════════════════════════════════════════════════════════════ #}
+<section class="gap-section" id="txnSection" aria-label="Recent transactions">
+  <div class="sb-section-header">
+    <div>
+      <h3 class="sb-section-title">Recent Transactions</h3>
+      <p class="sb-section-sub">Your latest account activity</p>
+    </div>
+    <button class="sb-btn sb-btn-ghost sb-btn-sm" aria-label="Export transactions">
+      <i class="fa-solid fa-download fa-xs" aria-hidden="true"></i>
+      Export
+    </button>
+  </div>
+
+  <div class="txn-card">
+    {# Toolbar: search + filter #}
+    <div class="txn-toolbar">
+      <div class="txn-search-wrap">
+        <i class="txn-search-icon fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+        <input type="search"
+               class="txn-search"
+               id="txnSearch"
+               placeholder="Search transactions…"
+               aria-label="Search transactions" />
+      </div>
+      <button class="txn-filter-btn" id="filterAll" aria-pressed="true" aria-label="Show all transactions">
+        <i class="fa-solid fa-list fa-xs" aria-hidden="true"></i> All
+      </button>
+      <button class="txn-filter-btn" id="filterCredit" aria-pressed="false" aria-label="Show deposits only">
+        <i class="fa-solid fa-arrow-down fa-xs" aria-hidden="true"></i> Deposits
+      </button>
+      <button class="txn-filter-btn" id="filterDebit" aria-pressed="false" aria-label="Show withdrawals only">
+        <i class="fa-solid fa-arrow-up fa-xs" aria-hidden="true"></i> Withdrawals
+      </button>
+    </div>
+
+    {# Table #}
+    <div style="overflow-x:auto">
+      <table class="txn-table" id="txnTable" aria-label="Transaction history">
+        <thead>
+          <tr>
+            <th scope="col">Transaction</th>
+            <th scope="col">Date</th>
+            <th scope="col">Category</th>
+            <th scope="col">Amount</th>
+            <th scope="col">Status</th>
+          </tr>
+        </thead>
+        <tbody id="txnBody">
+          <tr data-type="credit">
+            <td>
+              <div class="d-flex align-items-center gap-3">
+                <div class="txn-icon credit" aria-hidden="true"><i class="fa-solid fa-arrow-down"></i></div>
+                <div>
+                  <div class="txn-desc">Salary Deposit</div>
+                  <div class="txn-date">Recurring transfer</div>
+                </div>
+              </div>
+            </td>
+            <td><span class="txn-date">Jul 01, 2024</span></td>
+            <td><span class="category-chip">Income</span></td>
+            <td><span class="txn-amount credit">+$3,200.00</span></td>
+            <td><span class="badge-status completed">Completed</span></td>
+          </tr>
+          <tr data-type="debit">
+            <td>
+              <div class="d-flex align-items-center gap-3">
+                <div class="txn-icon debit" aria-hidden="true"><i class="fa-solid fa-arrow-up"></i></div>
+                <div>
+                  <div class="txn-desc">Rent Payment</div>
+                  <div class="txn-date">Monthly bill</div>
+                </div>
+              </div>
+            </td>
+            <td><span class="txn-date">Jun 30, 2024</span></td>
+            <td><span class="category-chip">Housing</span></td>
+            <td><span class="txn-amount debit">−$1,200.00</span></td>
+            <td><span class="badge-status completed">Completed</span></td>
+          </tr>
+          <tr data-type="credit">
+            <td>
+              <div class="d-flex align-items-center gap-3">
+                <div class="txn-icon credit" aria-hidden="true"><i class="fa-solid fa-arrow-down"></i></div>
+                <div>
+                  <div class="txn-desc">Freelance Payment</div>
+                  <div class="txn-date">Client invoice #142</div>
+                </div>
+              </div>
+            </td>
+            <td><span class="txn-date">Jun 28, 2024</span></td>
+            <td><span class="category-chip">Freelance</span></td>
+            <td><span class="txn-amount credit">+$850.00</span></td>
+            <td><span class="badge-status completed">Completed</span></td>
+          </tr>
+          <tr data-type="debit">
+            <td>
+              <div class="d-flex align-items-center gap-3">
+                <div class="txn-icon debit" aria-hidden="true"><i class="fa-solid fa-arrow-up"></i></div>
+                <div>
+                  <div class="txn-desc">Grocery Shopping</div>
+                  <div class="txn-date">Whole Foods</div>
+                </div>
+              </div>
+            </td>
+            <td><span class="txn-date">Jun 26, 2024</span></td>
+            <td><span class="category-chip">Food</span></td>
+            <td><span class="txn-amount debit">−$184.50</span></td>
+            <td><span class="badge-status completed">Completed</span></td>
+          </tr>
+          <tr data-type="debit">
+            <td>
+              <div class="d-flex align-items-center gap-3">
+                <div class="txn-icon debit" aria-hidden="true"><i class="fa-solid fa-arrow-up"></i></div>
+                <div>
+                  <div class="txn-desc">Netflix Subscription</div>
+                  <div class="txn-date">Auto-renew</div>
+                </div>
+              </div>
+            </td>
+            <td><span class="txn-date">Jun 25, 2024</span></td>
+            <td><span class="category-chip">Entertainment</span></td>
+            <td><span class="txn-amount debit">−$15.99</span></td>
+            <td><span class="badge-status pending">Pending</span></td>
+          </tr>
+          <tr data-type="debit">
+            <td>
+              <div class="d-flex align-items-center gap-3">
+                <div class="txn-icon debit" aria-hidden="true"><i class="fa-solid fa-arrow-up"></i></div>
+                <div>
+                  <div class="txn-desc">Electric Bill</div>
+                  <div class="txn-date">Monthly utility</div>
+                </div>
+              </div>
+            </td>
+            <td><span class="txn-date">Jun 23, 2024</span></td>
+            <td><span class="category-chip">Utilities</span></td>
+            <td><span class="txn-amount debit">−$98.00</span></td>
+            <td><span class="badge-status failed">Failed</span></td>
+          </tr>
+          <tr data-type="credit">
+            <td>
+              <div class="d-flex align-items-center gap-3">
+                <div class="txn-icon credit" aria-hidden="true"><i class="fa-solid fa-arrow-down"></i></div>
+                <div>
+                  <div class="txn-desc">Interest Credit</div>
+                  <div class="txn-date">Monthly interest</div>
+                </div>
+              </div>
+            </td>
+            <td><span class="txn-date">Jun 01, 2024</span></td>
+            <td><span class="category-chip">Interest</span></td>
+            <td><span class="txn-amount credit">+$12.40</span></td>
+            <td><span class="badge-status completed">Completed</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    {# Empty state (hidden unless search/filter yields nothing) #}
+    <div class="empty-state d-none" id="txnEmpty">
+      <i class="fa-regular fa-folder-open" aria-hidden="true"></i>
+      <p>No transactions match your search.</p>
+    </div>
+
+    {# Pagination #}
+    <div class="txn-pagination">
+      <span class="txn-page-info" id="txnPageInfo">Showing 7 transactions</span>
+      <div class="txn-page-btns" role="navigation" aria-label="Pagination">
+        <button class="txn-page-btn" aria-label="Previous page" disabled>
+          <i class="fa-solid fa-chevron-left fa-xs" aria-hidden="true"></i>
+        </button>
+        <button class="txn-page-btn active" aria-label="Page 1" aria-current="page">1</button>
+        <button class="txn-page-btn" aria-label="Page 2">2</button>
+        <button class="txn-page-btn" aria-label="Next page">
+          <i class="fa-solid fa-chevron-right fa-xs" aria-hidden="true"></i>
+        </button>
       </div>
     </div>
   </div>
+</section>
 
-  <div class="col-12 col-md-6">
-    <div class="card border-0 shadow-sm h-100">
-      <div class="card-body p-4">
-        <h5 class="card-title fw-bold text-danger mb-1">Withdraw Funds</h5>
-        <p class="text-muted small mb-3">Take money from your account</p>
-        <form method="POST" action="{{ url_for('withdraw') }}" novalidate>
-          <div class="mb-3">
-            <label for="withdraw-amount" class="form-label fw-semibold">Amount ($)</label>
-            <div class="input-group">
-              <span class="input-group-text">$</span>
-              <input type="number" class="form-control" id="withdraw-amount" name="amount"
-                placeholder="0.00" min="0.01" step="0.01" />
-            </div>
-          </div>
-          <div class="d-grid">
-            <button type="submit" class="btn btn-danger btn-lg">Withdraw</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
+{% endblock %}
 
-</div>
+
+{% block scripts %}
+<script>
+/* ================================================================
+   Dashboard JS — Charts, search/filter, client validation
+   ================================================================ */
+
+// ── Detect dark mode ─────────────────────────────────────────────
+function isDark() {
+  return document.documentElement.getAttribute('data-theme') === 'dark';
+}
+
+// ── Chart colour helpers ──────────────────────────────────────────
+function getChartColors() {
+  return {
+    primary:       '#2563EB',
+    primaryAlpha:  'rgba(37,99,235,.15)',
+    success:       '#16A34A',
+    successAlpha:  'rgba(22,163,74,.15)',
+    danger:        '#DC2626',
+    dangerAlpha:   'rgba(220,38,38,.15)',
+    grid:          isDark() ? 'rgba(255,255,255,.07)' : 'rgba(0,0,0,.06)',
+    text:          isDark() ? '#94A3B8' : '#64748B',
+    surface:       isDark() ? '#1E293B' : '#FFFFFF',
+  };
+}
+
+// ── Balance trend chart (line) ────────────────────────────────────
+(function () {
+  const canvas = document.getElementById('balanceChart');
+  if (!canvas) return;
+  const c = getChartColors();
+  const currentBalance = {{ balance | float }};
+  const fakeHistory = [
+    Math.max(0, currentBalance * .65),
+    Math.max(0, currentBalance * .72),
+    Math.max(0, currentBalance * .80),
+    Math.max(0, currentBalance * .88),
+    Math.max(0, currentBalance * .95),
+    currentBalance
+  ];
+
+  new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels: ['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+      datasets: [{
+        label: 'Balance',
+        data: fakeHistory,
+        borderColor: c.primary,
+        backgroundColor: c.primaryAlpha,
+        borderWidth: 2.5,
+        fill: true,
+        tension: .45,
+        pointBackgroundColor: c.primary,
+        pointBorderColor: c.surface,
+        pointBorderWidth: 2,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { intersect: false, mode: 'index' },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: isDark() ? '#1E293B' : '#fff',
+          titleColor: isDark() ? '#F1F5F9' : '#0F172A',
+          bodyColor: isDark() ? '#94A3B8' : '#64748B',
+          borderColor: isDark() ? '#334155' : '#E2E8F0',
+          borderWidth: 1,
+          padding: 10,
+          callbacks: {
+            label: ctx => ' $' + ctx.parsed.y.toLocaleString('en-US', { minimumFractionDigits: 2 })
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: c.grid },
+          ticks: { color: c.text, font: { size: 11 } },
+          border: { display: false }
+        },
+        y: {
+          grid: { color: c.grid },
+          ticks: {
+            color: c.text, font: { size: 11 },
+            callback: v => '$' + Number(v).toLocaleString('en-US', { minimumFractionDigits: 0 })
+          },
+          border: { display: false }
+        }
+      }
+    }
+  });
+})();
+
+// ── Income vs Expense doughnut ────────────────────────────────────
+(function () {
+  const canvas = document.getElementById('incomeExpenseChart');
+  if (!canvas) return;
+  const c = getChartColors();
+
+  new Chart(canvas, {
+    type: 'doughnut',
+    data: {
+      labels: ['Income', 'Expense', 'Savings'],
+      datasets: [{
+        data: [3240, 1890, 1350],
+        backgroundColor: [c.success, c.danger, c.primary],
+        borderColor: getChartColors().surface,
+        borderWidth: 3,
+        hoverOffset: 6,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '68%',
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: isDark() ? '#1E293B' : '#fff',
+          titleColor: isDark() ? '#F1F5F9' : '#0F172A',
+          bodyColor: isDark() ? '#94A3B8' : '#64748B',
+          borderColor: isDark() ? '#334155' : '#E2E8F0',
+          borderWidth: 1,
+          padding: 10,
+          callbacks: {
+            label: ctx => ' $' + ctx.parsed.toLocaleString('en-US', { minimumFractionDigits: 2 })
+          }
+        }
+      }
+    }
+  });
+})();
+
+// ── Transaction search & filter ───────────────────────────────────
+(function () {
+  const searchInput = document.getElementById('txnSearch');
+  const body        = document.getElementById('txnBody');
+  const empty       = document.getElementById('txnEmpty');
+  const pageInfo    = document.getElementById('txnPageInfo');
+  const btnAll      = document.getElementById('filterAll');
+  const btnCredit   = document.getElementById('filterCredit');
+  const btnDebit    = document.getElementById('filterDebit');
+
+  if (!searchInput || !body) return;
+
+  let activeFilter = 'all';
+
+  function applyFilter() {
+    const query = searchInput.value.toLowerCase().trim();
+    let visible = 0;
+
+    body.querySelectorAll('tr').forEach(function (row) {
+      const text    = row.textContent.toLowerCase();
+      const type    = row.dataset.type;
+      const matchQ  = !query || text.includes(query);
+      const matchF  = activeFilter === 'all' || type === activeFilter;
+      const show    = matchQ && matchF;
+      row.style.display = show ? '' : 'none';
+      if (show) visible++;
+    });
+
+    empty.classList.toggle('d-none', visible > 0);
+    if (pageInfo) pageInfo.textContent = `Showing ${visible} transaction${visible !== 1 ? 's' : ''}`;
+  }
+
+  searchInput.addEventListener('input', applyFilter);
+
+  function setFilter(filter, btn) {
+    activeFilter = filter;
+    [btnAll, btnCredit, btnDebit].forEach(b => { if (b) b.setAttribute('aria-pressed', 'false'); });
+    if (btn) btn.setAttribute('aria-pressed', 'true');
+    applyFilter();
+  }
+
+  if (btnAll)    btnAll.addEventListener('click',    () => setFilter('all',    btnAll));
+  if (btnCredit) btnCredit.addEventListener('click', () => setFilter('credit', btnCredit));
+  if (btnDebit)  btnDebit.addEventListener('click',  () => setFilter('debit',  btnDebit));
+})();
+
+// ── Client-side validation for deposit/withdraw forms ────────────
+(function () {
+  function validateMoneyForm(formId, fieldId, type) {
+    const form  = document.getElementById(formId);
+    const field = document.getElementById(fieldId);
+    if (!form || !field) return;
+
+    form.addEventListener('submit', function (e) {
+      const raw   = field.value.trim();
+      const val   = parseFloat(raw);
+      if (!raw) {
+        e.preventDefault();
+        SBToast.show('Please enter an amount.', 'error');
+        field.focus();
+        return;
+      }
+      if (isNaN(val) || val <= 0) {
+        e.preventDefault();
+        SBToast.show('Please enter a valid amount greater than zero.', 'error');
+        field.focus();
+      }
+    });
+  }
+
+  validateMoneyForm('depositForm',  'deposit-amount',  'deposit');
+  validateMoneyForm('withdrawForm', 'withdraw-amount', 'withdraw');
+})();
+
+// ── Redraw charts on theme change ─────────────────────────────────
+// (Observe attribute change on <html> for dark mode toggle)
+const observer = new MutationObserver(function () {
+  // Chart.js updates automatically on next render if we update defaults
+  Chart.instances && Object.values(Chart.instances).forEach(ch => ch.update());
+});
+observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+</script>
 {% endblock %}
